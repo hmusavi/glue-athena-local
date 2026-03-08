@@ -1,0 +1,4 @@
+{"order_id": "O001", "customer_id": "C001", "product": "Widget A", "amount": 100.00, "order_date": "2024-01-01"}
+{"order_id": "O002", "customer_id": "C002", "product": "Widget B", "amount": 200.00, "order_date": "2024-01-02"}
+{"order_id": "O003", "customer_id": "C001", "product": "Widget C", "amount": 150.00, "order_date": "2024-01-03"}
+{"order_id": "O004", "customer_id": "C003", "product": "Widget A", "amount": 100.00, "order_date": "2024-01-04"}

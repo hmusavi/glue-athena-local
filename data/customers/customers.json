@@ -1,0 +1,3 @@
+{"customer_id": "C001", "name": "Alice Smith", "email": "alice@example.com", "country": "US"}
+{"customer_id": "C002", "name": "Bob Jones", "email": "bob@example.com", "country": "UK"}
+{"customer_id": "C003", "name": "Carol White", "email": "carol@example.com", "country": "US"}
