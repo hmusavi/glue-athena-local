@@ -7,6 +7,8 @@ Trino — Athena-compatible query engine
 
 The following containers must be deployed `motoserver/moto`, `public.ecr.aws/glue/aws-glue-libs` and `trinodb/trino` on Podman or DOcker.
 
+If you are using WSL and need Podman with Docker-compatible commands (`docker`, `docker compose`), follow [README-podman-wsl.md](README-podman-wsl.md).
+
 ## Project Structure
 
 ```
@@ -41,6 +43,8 @@ pandas
 ---
 
 ### Running It
+
+WSL + Podman users: see [README-podman-wsl.md](README-podman-wsl.md) for Docker-compatible setup before running these commands.
 
 ```bash
 docker-compose up -d
