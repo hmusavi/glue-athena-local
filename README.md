@@ -46,13 +46,46 @@ pandas
 
 WSL + Podman users: see [README-podman-wsl.md](README-podman-wsl.md) for Docker-compatible setup before running these commands.
 
+Install Astral `uv` on WSL/Linux (one-time):
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+source ~/.local/bin/env
+uv --version
+```
+
+Install `zip` and `unzip` on WSL/Linux (one-time):
+
+```bash
+sudo apt-get update
+sudo apt-get install -y zip unzip
+zip -v | head -n 2
+unzip -v | head -n 2
+```
+
 ```bash
 docker-compose up -d
 sleep 30  # wait for Trino to initialize
 
 cd app
-pip install -r requirements.txt
+uv venv --python 3.11
+source .venv/bin/activate
+uv pip install -r requirements.txt
 python run_pipeline.py
+```
+
+---
+
+### Install AWS CLI v2 (WSL/Linux)
+
+Install AWS CLI v2 with the official installer:
+
+```bash
+cd /tmp
+curl -fsSLo awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+unzip -o awscliv2.zip
+sudo ./aws/install --update
+aws --version
 ```
 
 ---
