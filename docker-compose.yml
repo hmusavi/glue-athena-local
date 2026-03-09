@@ -36,3 +36,18 @@ services:
       - ./trino-config:/etc/trino
     depends_on:
       - moto
+
+  devcontainer:
+    image: mcr.microsoft.com/devcontainers/python:1-3.11-bullseye
+    volumes:
+      - ./:/workspace/glue-athena-local
+    working_dir: /workspace/glue-athena-local
+    command: sleep infinity
+    environment:
+      - AWS_DEFAULT_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+    depends_on:
+      - moto
+      - glue
+      - trino

@@ -13,6 +13,11 @@ If you are using WSL and need Podman with Docker-compatible commands (`docker`, 
 
 ```
 glue-athena-local/
+├── .devcontainer/
+│   └── devcontainer.json
+├── .vscode/
+│   ├── settings.json
+│   └── extensions.json
 ├── docker-compose.yml
 ├── data/
 │   ├── customers/
@@ -73,6 +78,35 @@ source .venv/bin/activate
 uv pip install -r requirements.txt
 python run_pipeline.py
 ```
+
+---
+
+### VS Code Dev Container
+
+This repository includes a dedicated `devcontainer` service in `docker-compose.yml` and a `.devcontainer/devcontainer.json` config so VS Code can attach directly.
+
+Prerequisite: install the VS Code extension `Dev Containers` (`ms-vscode-remote.remote-containers`).
+
+1. Start containers:
+
+```bash
+docker compose up -d
+```
+
+2. In VS Code, open the project folder and run:
+
+`Dev Containers: Reopen in Container`
+
+3. Verify you are inside the dev container:
+
+```bash
+python --version
+pwd
+```
+
+Expected workspace path:
+
+`/workspace/glue-athena-local`
 
 ---
 
