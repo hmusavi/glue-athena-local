@@ -51,14 +51,18 @@ pandas
 
 WSL + Podman users: see [README-podman-wsl.md](README-podman-wsl.md) for Docker-compatible setup before running these commands.
 
-Install Astral `uv` on WSL/Linux (one-time):
+Install Astral `uv` on WSL/Linux and create a virtual environment for python 3.11 (one-time):
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 source ~/.local/bin/env
 uv --version
-```
 
+uv venv --python 3.11
+source .venv/bin/activate
+uv pip install -r requirements.txt
+
+```
 Install `zip` and `unzip` on WSL/Linux (one-time):
 
 ```bash
@@ -71,11 +75,6 @@ unzip -v | head -n 2
 ```bash
 docker-compose up -d
 sleep 30  # wait for Trino to initialize
-
-cd app
-uv venv --python 3.11
-source .venv/bin/activate
-uv pip install -r requirements.txt
 python run_pipeline.py
 ```
 
