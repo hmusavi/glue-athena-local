@@ -34,6 +34,9 @@ glue-athena-local/
 │   └── catalog/
 │       └── glue.properties
 └── app/
+    ├── query_athena_table.py
+    ├── query_glue_table.py
+    ├── query_runner.py
     ├── requirements.txt
     └── run_pipeline.py
 ```
@@ -77,6 +80,48 @@ docker-compose up -d
 sleep 30  # wait for Trino to initialize
 python run_pipeline.py
 ```
+
+### Query Scripts
+
+The app includes two standalone query scripts that accept a SQL `SELECT` statement as a command-line argument and print all records to stdout.
+
+1. Query Glue tables through Trino (local Athena-compatible engine):
+
+```bash
+python app/query_glue_table.py "SELECT * FROM glue.sales_db.customer_orders ORDER BY order_date"
+```
+
+Additional example with optional connection flags:
+
+```bash
+python app/query_glue_table.py "SELECT country, SUM(amount) AS revenue FROM glue.sales_db.customer_orders GROUP BY country ORDER BY revenue DESC" \
+      --host localhost --port 8080 --user admin --catalog glue --schema sales_db
+```
+
+2. Query Athena tables through the Athena API (Moto endpoint):
+
+```bash
+python app/query_athena_table.py "SELECT * FROM customer_orders ORDER BY order_date"
+```
+
+Additional example with optional endpoint/output flags:
+
+```bash
+python app/query_athena_table.py "SELECT customer_name, COUNT(*) AS orders FROM customer_orders GROUP BY customer_name ORDER BY orders DESC" \
+      --database sales_db \
+      --endpoint-url http://localhost:5000 \
+      --output-location s3://glue-bucket/athena-results/ \
+      --region us-east-1 \
+      --access-key test \
+      --secret-key test \
+      --timeout-seconds 60
+```
+
+Notes:
+
+- Run `python run_pipeline.py` first so the `customer_orders` table exists.
+- `query_glue_table.py` expects fully qualified table references (for example `glue.sales_db.customer_orders`).
+- `query_athena_table.py` uses `sales_db` as the default Athena database.
 
 ---
 

@@ -6,8 +6,9 @@ import subprocess
 import time
 import os
 import shlex
-import trino
 import pandas as pd
+
+from query_runner import run_trino_query
 
 COMPOSE_CMD = shlex.split(os.getenv("DOCKER_COMPOSE_CMD", "docker compose"))
 GLUE_SERVICE = os.getenv("GLUE_SERVICE", "glue")
@@ -26,17 +27,7 @@ def run_glue_job(job_file: str):
 
 def query(sql: str, label: str):
     print(f"\n── {label} ──")
-    conn = trino.dbapi.connect(
-        host="localhost",
-        port=8080,
-        user="admin",
-        catalog="glue",
-        schema="sales_db",
-    )
-    cur = conn.cursor()
-    cur.execute(sql)
-    rows = cur.fetchall()
-    cols = [d[0] for d in cur.description]
+    cols, rows = run_trino_query(sql)
     df = pd.DataFrame(rows, columns=cols)
     print(df.to_string(index=False))
     return df

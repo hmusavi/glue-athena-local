@@ -150,6 +150,149 @@ ssh://<user>@localhost/run/user/<uid>/podman/podman.sock
 
 ## Troubleshooting
 
+### WSL has no internet connection (Cisco AnyConnect VPN)
+
+Cisco AnyConnect VPN takes over the Windows routing table and does not forward
+traffic for WSL2's virtual network. This means `apt-get update`, `pip install`,
+`curl`, and container image pulls will all fail while the VPN is connected.
+
+You have two options:
+
+#### Option A — Disconnect from VPN before using WSL (quick & easy)
+
+1. Disconnect from Cisco AnyConnect.
+2. Use WSL normally — networking will work over Wi-Fi / Ethernet.
+3. Reconnect to VPN when you are done with WSL tasks that need internet.
+
+This is the simplest approach if you only need internet in WSL occasionally.
+
+#### Option B — Enable mirrored networking (permanent fix)
+
+WSL 2.1+ supports **mirrored networking mode**, which makes WSL share the
+host's network interfaces directly instead of using a NAT'd virtual switch.
+This bypasses the VPN routing conflict entirely.
+
+##### Step 1 — Create or update `.wslconfig`
+
+In **PowerShell** (not WSL), create the file at `%USERPROFILE%\.wslconfig`:
+
+```powershell
+notepad "$env:USERPROFILE\.wslconfig"
+```
+
+Add or merge the following contents:
+
+```ini
+[wsl2]
+networkingMode=mirrored
+dnsTunneling=true
+autoProxy=true
+```
+
+- `networkingMode=mirrored` — WSL uses the same network stack as Windows.
+- `dnsTunneling=true` — DNS requests are tunneled through Windows, which
+  already knows how to resolve names on the VPN.
+- `autoProxy=true` — WSL inherits the Windows proxy configuration.
+
+##### Step 2 — Restart WSL
+
+```powershell
+wsl --shutdown
+```
+
+Then open a new WSL terminal. Verify connectivity:
+
+```bash
+ping -c 2 8.8.8.8
+```
+
+If pings succeed, IP-level connectivity is restored.
+
+##### Step 3 — Import corporate CA certificates (for HTTPS)
+
+If your organization uses SSL inspection (e.g., **Netskope**, Zscaler, or a
+VA TIC firewall), HTTPS connections will fail with
+`SSL certificate problem: self-signed certificate in certificate chain` even
+after mirrored networking is enabled. You need to import the corporate CA
+certificates into WSL's trust store.
+
+**3a. Export certificates from Windows (PowerShell, run as Administrator):**
+
+```powershell
+# Create a temp directory for the exported certs
+New-Item -ItemType Directory -Path "$env:TEMP\wsl-certs" -Force | Out-Null
+
+# Export Netskope and VA root/intermediate CA certs
+# Adjust the -like filters for your organization's CA names
+$certs = Get-ChildItem Cert:\LocalMachine\Root | Where-Object {
+    $_.Subject -like '*Netskope*' -or
+    $_.Subject -like '*VA Internal Root*' -or
+    $_.Subject -like '*VA-Internal-S2-RCA*' -or
+    $_.Subject -like '*gwlfw*' -or
+    $_.Subject -like '*gwsfw*' -or
+    $_.Subject -like '*gwnfw*' -or
+    $_.Subject -like '*gwefw*' -or
+    $_.Subject -like '*gwwfw*'
+}
+
+foreach ($cert in $certs) {
+    $name = $cert.Thumbprint + ".crt"
+    $path = Join-Path "$env:TEMP\wsl-certs" $name
+    $bytes = $cert.Export(
+        [System.Security.Cryptography.X509Certificates.X509ContentType]::Cert)
+    $b64 = [Convert]::ToBase64String($bytes,
+        [Base64FormattingOptions]::InsertLineBreaks)
+    "-----BEGIN CERTIFICATE-----`n$b64`n-----END CERTIFICATE-----" |
+        Set-Content $path -Encoding ASCII
+}
+
+Write-Host "Exported $($certs.Count) certificates to $env:TEMP\wsl-certs"
+```
+
+**3b. Import certificates into WSL (run inside WSL):**
+
+```bash
+# Copy the exported certs into Ubuntu's trust store
+sudo cp /mnt/c/Users/<YOUR_USERNAME>/AppData/Local/Temp/wsl-certs/*.crt \
+    /usr/local/share/ca-certificates/
+
+# Rebuild the certificate bundle
+sudo update-ca-certificates
+```
+
+Replace `<YOUR_USERNAME>` with your Windows username (e.g., `OITWASMUSAVH`).
+
+**3c. Verify HTTPS works:**
+
+```bash
+curl -I https://google.com
+```
+
+You should see `HTTP/1.1 200 OK` (or a `301` redirect). If you still get
+certificate errors, check that the correct CA names were exported in step 3a.
+
+##### Step 4 — Verify full connectivity
+
+```bash
+# IP connectivity
+ping -c 2 8.8.8.8
+
+# DNS resolution
+ping -c 2 google.com
+
+# HTTPS through VPN/proxy
+curl -I https://google.com
+
+# Package manager
+sudo apt-get update
+```
+
+All four commands should succeed while connected to VPN.
+
+---
+
+### Other common issues
+
 - `"/" is not a shared mount` warning in WSL: usually non-fatal; containers still run.
 - `cannot connect to Podman socket`: ensure `podman.socket` is active and `DOCKER_HOST` is set.
 - `docker` works but compose fails: ensure `docker-compose` is installed and uses same `DOCKER_HOST`.
