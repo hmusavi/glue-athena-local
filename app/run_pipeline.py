@@ -8,7 +8,7 @@ import os
 import shlex
 import pandas as pd
 
-from query_runner import run_trino_query
+from query_utils import run_trino_query
 
 COMPOSE_CMD = shlex.split(os.getenv("DOCKER_COMPOSE_CMD", "docker compose"))
 GLUE_SERVICE = os.getenv("GLUE_SERVICE", "glue")

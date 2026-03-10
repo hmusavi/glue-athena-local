@@ -36,7 +36,7 @@ glue-athena-local/
 └── app/
     ├── query_athena_table.py
     ├── query_glue_table.py
-    ├── query_runner.py
+    ├── query_utils.py
     ├── requirements.txt
     └── run_pipeline.py
 ```

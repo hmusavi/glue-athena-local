@@ -7,7 +7,7 @@ Usage:
 
 import argparse
 
-from query_runner import print_rows_stdout, run_athena_query
+from query_utils import print_rows_stdout, run_athena_query
 
 
 def parse_args() -> argparse.Namespace:
