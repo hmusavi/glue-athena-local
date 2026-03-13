@@ -1,0 +1,11 @@
+[project]
+name = "glue-athena-local"
+version = "0.1.0"
+description = "Local Glue, Athena, and OpenSearch development environment using Moto, Trino, and OpenSearch containers"
+requires-python = ">=3.11"
+dependencies = [
+    "boto3",
+    "opensearch-py",
+    "trino",
+    "pandas",
+]
